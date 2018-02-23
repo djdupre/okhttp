@@ -3125,6 +3125,29 @@ public final class CallTest {
     }
   }
 
+  @Test public void failedAuthenticatorReleasesConnection() throws IOException {
+    server.enqueue(new MockResponse()
+        .setResponseCode(401));
+
+    client.connectionPool().evictAll();
+    client = client.newBuilder()
+        .authenticator(new Authenticator() {
+          @Override public Request authenticate(Route route, Response response) throws IOException {
+            throw new IOException("IOException!");
+          }
+        })
+        .build();
+
+    Request request = new Request.Builder()
+        .url(server.url("/"))
+        .build();
+
+    executeSynchronously(request)
+        .assertFailure(IOException.class);
+
+    assertEquals(1, client.connectionPool().idleConnectionCount());
+  }
+
   @Test public void httpsWithIpAddress() throws Exception {
     String localIpAddress = InetAddress.getLoopbackAddress().getHostAddress();
 
