@@ -221,6 +221,15 @@ public final class CookieTest {
     assertFalse(cookie.matches(HttpUrl.parse("http://square.com")));
   }
 
+  @Test public void domainMatchesWithSuffix() throws Exception {
+    Cookie cookie = Cookie.parse(url, "a=b; domain=example.com");
+    assertTrue(cookie.matches(HttpUrl.parse("http://example.com/foo")));
+    assertTrue(cookie.matches(HttpUrl.parse("http://example.com/foo/bar")));
+    assertTrue(cookie.matches(HttpUrl.parse("http://www.example.com/foo")));
+    assertTrue(cookie.matches(HttpUrl.parse("http://www.example.com/foo/bar")));
+    assertFalse(cookie.matches(HttpUrl.parse("http://square.com/foo")));
+  }
+
   /** If no domain is present, match only the origin domain. */
   @Test public void domainMatchesNoDomain() throws Exception {
     Cookie cookie = Cookie.parse(url, "a=b");
